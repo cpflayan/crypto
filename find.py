@@ -64,13 +64,17 @@ def public_key_to_p2pkh_address(public_key):
     address = base58.b58encode(address_bytes)
     return address.decode()
 
+import bech32
+
 def public_key_to_bech32_address(public_key):
     sha256_pk = hashlib.sha256(public_key).digest()
     ripemd160_pk = ripemd160(sha256_pk)
-    witness_version = 0
     converted = bech32.convertbits(ripemd160_pk, 8, 5)
-    address = bech32.encode('bc', [witness_version] + converted)
+    if converted is None:
+        raise ValueError("convertbits failed")
+    address = bech32.encode('bc', 0, converted)
     return address
+
 
 # 查詢地址餘額的函數
 def query_balance(address, max_retries=5):
