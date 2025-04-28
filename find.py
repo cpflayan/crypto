@@ -8,6 +8,19 @@ import requests
 import concurrent.futures
 import random
 import time
+from Crypto.Hash import RIPEMD
+
+def ripemd160(data):
+    h = RIPEMD.new()
+    h.update(data)
+    return h.digest()
+
+# 然後原本這一行：
+# ripemd160_pk = hashlib.new('ripemd160', sha256_pk).digest()
+
+# 要改成：
+
+
 
 # Telegram推送函數
 def send_telegram_message(message, bot_token, chat_id):
@@ -44,7 +57,7 @@ def private_key_to_public_key(private_key):
 
 def public_key_to_p2pkh_address(public_key):
     sha256_pk = hashlib.sha256(public_key).digest()
-    ripemd160_pk = hashlib.new('ripemd160', sha256_pk).digest()
+    ripemd160_pk = ripemd160(sha256_pk)
     network_byte = b'\x00' + ripemd160_pk
     checksum = hashlib.sha256(hashlib.sha256(network_byte).digest()).digest()[:4]
     address_bytes = network_byte + checksum
@@ -53,7 +66,7 @@ def public_key_to_p2pkh_address(public_key):
 
 def public_key_to_bech32_address(public_key):
     sha256_pk = hashlib.sha256(public_key).digest()
-    ripemd160_pk = hashlib.new('ripemd160', sha256_pk).digest()
+    ripemd160_pk = ripemd160(sha256_pk)
     witness_version = 0
     converted = bech32.convertbits(ripemd160_pk, 8, 5)
     address = bech32.encode('bc', [witness_version] + converted)
